@@ -10,7 +10,7 @@ from dotenv import dotenv_values
 import bcrypt
 #--------------------------------------------------------------------
 
-secrets = dotenv_values(r"backend\pass.env")
+secrets = dotenv_values(r"C:\Users\shami\OneDrive\Desktop\University\Info_Security\A3\authentication\2FA\backend\pass.env")
 app = Flask(__name__)
 CORS(app)
 otp_storage = {}
@@ -64,14 +64,15 @@ def login_user():
         return jsonify({"error": "Email and password are required"}), 400
 
     try:
-        query = "SELECT password FROM users WHERE email = %s"
+        query = "SELECT password, user_name FROM users WHERE email = %s"
         cursor.execute(query, (email,))
         result = cursor.fetchone()
 
         if result:
             stored_hashed_password = result[0].encode('utf-8') 
             if bcrypt.checkpw(password.encode('utf-8'), stored_hashed_password):
-                return jsonify({"status": "Login successful"}), 200
+                print(result)
+                return jsonify({"status": "Login successful", "username": result[1]}), 200
             else:
                 return jsonify({"error": "Invalid password"}), 401
         else:
