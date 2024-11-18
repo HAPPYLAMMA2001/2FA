@@ -1,3 +1,4 @@
+drop database if exists users;
 CREATE DATABASE IF NOT EXISTS users;
 USE users;
 
@@ -9,3 +10,6 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     contact VARCHAR(20)
 );
+
+delete from users where id=6;
+select * from users;

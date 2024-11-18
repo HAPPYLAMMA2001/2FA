@@ -10,11 +10,12 @@ from dotenv import dotenv_values
 import bcrypt
 #--------------------------------------------------------------------
 
-secrets = dotenv_values(r"C:\Users\shami\OneDrive\Desktop\University\Info_Security\A3\authentication\2FA\backend\pass.env")
+secrets = dotenv_values("pass.env")
 app = Flask(__name__)
 CORS(app)
 otp_storage = {}
 password_storage = {}
+username_storage = {}
 
 
 db = mysql.connector.connect(
@@ -69,10 +70,17 @@ def login_user():
         result = cursor.fetchone()
 
         if result:
-            stored_hashed_password = result[0].encode('utf-8') 
+            stored_hashed_password = result[0].encode('utf-8')
+            username = result[1]
             if bcrypt.checkpw(password.encode('utf-8'), stored_hashed_password):
-                print(result)
-                return jsonify({"status": "Login successful", "username": result[1]}), 200
+                otp = generate_otp()
+                print("OTP",otp)
+                otp_storage[email] = otp
+                # username_storage[email] = username
+                if send_otp_via_email(email, otp):
+                    return jsonify({"status": "OTP sent", "username": username}), 200
+                else:
+                    return jsonify({"error": "Failed to send OTP"}), 500
             else:
                 return jsonify({"error": "Invalid password"}), 401
         else:
@@ -86,21 +94,14 @@ def verify_otp(user_otp, stored_otp):
     return user_otp == stored_otp
 
 def insert_user_data(email,password):
-    user_name = "React_testing"
-    first_name = "John"
-    middle_name = "M"
-    last_name = "Doe"
-    age = 30
-    dob = "1993-01-01"
-    gender = "Male"
-    contact = "1234567890"
+    user_name = username_storage[email]
     
     try:
         query = """
-        INSERT INTO users (user_name, email, gender, password, contact)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO users (user_name, email, password)
+        VALUES (%s, %s, %s)
         """
-        values = (user_name, email, gender, password, contact)
+        values = (user_name, email, password)
         cursor.execute(query, values)
         db.commit()
         return True
@@ -146,18 +147,25 @@ def verify_and_insert_data():
     data = request.get_json()
     email = data.get('email')
     user_input_otp = data.get('otp')
-    password = data.get('password')
-    print(email,":",password)
+    print(data)
+    login = data.get('login')
+    print("LOGIN: ",login)
+    print(email)
     if email not in otp_storage:
         return jsonify({"error": "OTP not generated for this email"}), 400
     stored_otp = otp_storage[email]
     if verify_otp(user_input_otp, stored_otp):
-        if insert_user_data(email,password_storage[email]):
+        if login:
             otp_storage.pop(email, None)
-            password_storage.pop(email,None)
-            return jsonify({"status": "User data inserted successfully"}), 200
+            return jsonify({"status": "Login successful"}), 200
         else:
-            return jsonify({"error": "Failed to insert user data"}), 500
+            if insert_user_data(username_storage[email], email,password_storage[email]):
+                otp_storage.pop(email, None)
+                password_storage.pop(email,None)
+                username_storage.pop(email,None)
+                return jsonify({"status": "User data inserted successfully"}), 200
+            else:
+                return jsonify({"error": "Failed to insert user data"}), 500
     else:
         return jsonify({"error": "Invalid OTP"}), 401
 

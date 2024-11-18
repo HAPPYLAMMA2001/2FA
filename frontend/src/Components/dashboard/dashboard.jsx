@@ -1,20 +1,33 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import './dashboard.css';  // Add this import
-
-
+import { useEffect } from 'react';
+import './dashboard.css';
 
 const Dashboard = () => {
-
-    
-
     const location = useLocation();
     const navigate = useNavigate();
-    const username = location.state?.username || 'User';
+    const user = JSON.parse(localStorage.getItem('user'));
     const handleLogout = () => {
+      localStorage.removeItem('user');
         navigate('/');
     };
-    console.log(username);
+    useEffect(() => {
+
+      if (!user || !user.loggedIn) {
+          navigate('/');
+          return;
+      }
+  }, [navigate, user]);
+  console.log(user);
+  if (!user || !user.loggedIn) {
+    return (
+        <div className="dashboard">
+            <div className="dashboard-body">
+                <h2>Please log in to access the dashboard</h2>
+            </div>
+        </div>
+    );
+  }
   return (
     <div className="dashboard">
       <div className="dashboard-body">
@@ -25,7 +38,7 @@ const Dashboard = () => {
             </div>
 
             <div className="dashboard-greetings">
-                <h1 className='dashboard-text'>Welcome to the Dashboard <br /> {username}</h1>
+                <h1 className='dashboard-text'>Welcome to the Dashboard <br /> {user.username}</h1>
             </div>
 
             <div className='dashboard_submit_container'>

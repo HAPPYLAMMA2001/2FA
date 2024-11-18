@@ -10,47 +10,49 @@ const Login_Signup = () => {
     const [emailInput, setEmailInput] = useState('');
     const [user_password, setUserPassword] = useState('');
     const [message, setMessage] = useState('');
+    const [user_name, setUserName] = useState('');
     const navigate = useNavigate();
 
     const requestOtp = async () => {
         try {
-            const response = await fetch('http://localhost:5000/generate_otp', { // Update endpoint if needed
+            const response = await fetch('http://localhost:5000/generate_otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: emailInput, password: user_password })
+                body: JSON.stringify({ email: emailInput, password: user_password, username: user_name })
             });
             const data = await response.json();
 
             if (response.ok) {
                 setMessage(data.status || 'OTP sent to your email!');
-                navigate('/authentication', { state: { email: emailInput } });
+                navigate('/authentication', { state: { email: emailInput, login: false } });
             } else {
                 setMessage(data.error || 'Error requesting OTP');
             }
         } catch (error) {
-            console.error('Error requesting OTP:', error); // Log error for debugging
+            console.error('Error requesting OTP:', error);
             setMessage('Failed to connect to server');
         }
     };
 
     const login_user = async () => {
         try {
-            const response = await fetch('http://localhost:5000/login', { // Update endpoint if needed
+            const response = await fetch('http://localhost:5000/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: emailInput, password: user_password }) // Fixed typo here
+                body: JSON.stringify({ email: emailInput, password: user_password, login: true }) 
             });
             const data = await response.json();
 
             if (response.ok) {
                 setMessage(data.status || 'Login successful!');
-                
-                navigate('/dashboard', { state: { username: data.username } }); // Uncomment or adjust this for actual navigation
+                const username = data.username;
+                navigate('/authentication', { state: { email: emailInput, login: true, username:username } });
+                // navigate('/dashboard', { state: { username: user_name } });
             } else {
                 setMessage(data.error || 'Invalid login credentials');
             }
         } catch (error) {
-            console.error('Error during login:', error); // Log error for debugging
+            console.error('Error during login:', error);
             setMessage('Failed to connect to server');
         }
     };
@@ -67,7 +69,7 @@ const Login_Signup = () => {
                     {action === 'Login' ? null : (
                         <div className="input">
                             <img src={user} alt="" />
-                            <input type="text" placeholder="Full Name" />
+                            <input type="text" placeholder="Full Name" value={user_name} onChange={(e) => setUserName(e.target.value)}/>
                         </div>
                     )}
 

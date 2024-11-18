@@ -8,27 +8,47 @@ const Auth = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const email = location.state?.email;
+    const username = location.state?.username;
 
-
-
-    const verifyOtp = async () => {
+     const verifyOtp = async () => {
         try {
+            //from login or not
+            const isLogin = location.state?.login || false;
+            
             const response = await fetch('http://localhost:5000/verify_otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email, otp }) 
+                body: JSON.stringify({ 
+                    email: email, 
+                    otp: otp,
+                    login: isLogin  //backend kay liye
+                }) 
             });
             const data = await response.json();
+    
             if (response.ok) {
-                setMessage(data.status || 'OTP verified and data saved!');
-                // navigate('/successlanding');
-                alert("ACCOUNT CREATED---Track back and login")
-                return("DATA INSERTED")
+                setMessage(data.status || 'OTP verified successfully!');
+                
+                if (isLogin) {
+                    localStorage.setItem('user', JSON.stringify({
+                        username: username,
+                        loggedIn: true,
+                        email: email
+                    }));
+                    navigate('/dashboard', { 
+                        state: { username: location.state?.username } 
+                    });
+                } else {
+                    //registration
+                    alert("ACCOUNT CREATED---Track back and login");
+                    navigate('/');
+                }
             } else {
                 setMessage(data.error || 'Invalid OTP');
             }
         } catch (error) {
             setMessage('Failed to connect to server');
+            console.error('Error:', error);
         }
     };
     return (
