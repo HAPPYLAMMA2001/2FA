@@ -10,6 +10,28 @@ const Auth = () => {
     const email = location.state?.email;
     const username = location.state?.username;
 
+     const [timer, setTimer] = useState(30);
+
+     React.useEffect(() => {
+         if (timer > 0) {
+             const countdown = setInterval(() => {
+                 setTimer(prevTime => prevTime - 1);
+             }, 1000);
+
+             return () => clearInterval(countdown);
+         } else {
+             alert("OTP session expired. Please try again.");
+             navigate('/');
+         }
+     }, [timer, navigate]);
+
+     const formatTime = (seconds) => {
+         const minutes = Math.floor(seconds / 60);
+         const remainingSeconds = seconds % 60;
+         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+     };
+
+    
      const verifyOtp = async () => {
         try {
             //from login or not
@@ -68,7 +90,11 @@ const Auth = () => {
                         />
                     </div>
                 </div>
-                <div className="otp">OTP has been sent to registered email which is valid for only <br />5 minutes. <span onClick={verifyOtp}>Send Again</span> </div>
+                
+                <div className="otp">
+                    OTP has been sent to registered email which is valid for only <br />
+                    {formatTime(timer)} minutes. You will be redirected to login page if OTP is not verified.
+                </div>
                 <div className='submit_button' onClick={verifyOtp}>Submit</div>
                 {message && <p className="message">{message}</p>}
             </div>
