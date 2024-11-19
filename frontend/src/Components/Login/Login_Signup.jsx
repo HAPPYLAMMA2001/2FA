@@ -94,11 +94,11 @@ const Login_Signup = () => {
                     </div>
                 </div>
 
-                {action === 'Sign Up' ? null : (
+                {/* {action === 'Sign Up' ? null : (
                     <div className="forget_password">
                         Lost Password? <span>Click Here</span>
                     </div>
-                )}
+                )} */}
 
                 <div className="submit-container">
                     <div

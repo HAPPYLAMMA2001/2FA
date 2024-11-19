@@ -10,7 +10,7 @@ from dotenv import dotenv_values
 import bcrypt
 #--------------------------------------------------------------------
 
-secrets = dotenv_values("pass.env")
+secrets = dotenv_values(r"C:\Users\shami\OneDrive\Desktop\University\Info_Security\A3\authentication\2FA\backend\pass.env")
 app = Flask(__name__)
 CORS(app)
 otp_storage = {}
