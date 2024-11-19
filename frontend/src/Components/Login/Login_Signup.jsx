@@ -39,7 +39,7 @@ const Login_Signup = () => {
             const response = await fetch('http://localhost:5000/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: emailInput, password: user_password, login: true }) 
+                body: JSON.stringify({ email: emailInput, password: user_password, username: user_name, login: true }) 
             });
             const data = await response.json();
 

@@ -93,9 +93,8 @@ def login_user():
 def verify_otp(user_otp, stored_otp):
     return user_otp == stored_otp
 
-def insert_user_data(email,password):
-    user_name = username_storage[email]
-    
+def insert_user_data(user_name, email,password):
+    print("USER NAME: ",user_name, "EMAIL: ",email, "PASSWORD: ",password)
     try:
         query = """
         INSERT INTO users (user_name, email, password)
@@ -127,6 +126,8 @@ def generate_and_send_otp():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+    username = data.get('username')
+    print(data)
     print("GENEMAIL",email)
     password = hash_password(password)
     if not email:
@@ -135,6 +136,7 @@ def generate_and_send_otp():
     otp = generate_otp()
     otp_storage[email] = otp  # Store the OTP for this email
     password_storage[email] = password
+    username_storage[email] = username
     print("Generated OTP:", otp)
 
     if send_otp_via_email(email, otp):
@@ -147,7 +149,7 @@ def verify_and_insert_data():
     data = request.get_json()
     email = data.get('email')
     user_input_otp = data.get('otp')
-    print(data)
+    # print(username_storage[email], password_storage[email])
     login = data.get('login')
     print("LOGIN: ",login)
     print(email)
